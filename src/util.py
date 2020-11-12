@@ -14,6 +14,7 @@ import json
 import pickle
 import base64
 
+import torch
 from gym import wrappers
 import pytz
 import matplotlib.pyplot as plt
@@ -156,3 +157,37 @@ def plot_graph(res, tr_res):
     axR.set_xlabel('Step')
 
     fig.savefig(os.path.join(dir_name, plotFILE_NAME))
+
+def updating(args, gbrain, lbrain, optimizer, o_, done, observations, actions, rewards):
+    if done:
+        v_s_ = 0.               # terminal
+    else:
+        v_s_ = lbrain.forward(v_wrap(o_[None, :]))[-1].data.numpy()[0, 0]
+
+    buffer_v_target = []
+    for r in rewards[::-1]:    # reverse buffer r
+        v_s_ = r + args.gamma * v_s_
+        buffer_v_target.append(v_s_)
+    buffer_v_target.reverse()
+
+    loss, v_loss, entropy = lbrain.loss_func_etp(
+        args,
+        v_wrap(np.vstack(observations)),
+        v_wrap(np.array(actions), dtype=np.int64) if actions[0].dtype == np.int64 else v_wrap(np.vstack(actions)),
+        v_wrap(np.array(buffer_v_target)[:, None]))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    for lp, gp in zip(lbrain.parameters(), gbrain.parameters()):
+        gp._grad = lp.grad
+    optimizer.step()
+
+    lbrain.load_state_dict(gbrain.state_dict())
+
+    return v_loss, entropy
+                    
+def v_wrap(np_array, dtype=np.float32):
+    if np_array.dtype != dtype:
+        np_array = np_array.astype(dtype)
+    return torch.from_numpy(np_array)

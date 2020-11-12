@@ -11,7 +11,7 @@ import torch.autograd as autograd
 from torch.autograd import Variable
 import torch.multiprocessing as mp
 
-from environment import v_wrap
+from util import v_wrap
 
 def test(brain, args, env):
     step = 0
