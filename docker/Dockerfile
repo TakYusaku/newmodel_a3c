@@ -26,6 +26,8 @@ RUN pip3 install gym
 RUN pip3 install torchsummary
 RUN pip3 install matplotlib
 RUN pip3 install dataclasses
+RUN pip3 install tabulate
+RUN pip install tabulate
 RUN pip install PyOpenGL PyOpenGL_accelerate
 RUN pip3 install PyOpenGL PyOpenGL_accelerate
 
