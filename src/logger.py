@@ -132,7 +132,7 @@ def record_tabular_misc_stat(key, values):
     record_tabular(key + "Median", np.median(values))
     record_tabular(key + "Min", np.amin(values))
     record_tabular(key + "Max", np.amax(values))
-
+'''
 def save_nw_param(args, brain, g_ep, max_orn):
     if args.save_mode == 'all':
         torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+"_{}.pkl".format(g_ep.value)))
@@ -140,7 +140,16 @@ def save_nw_param(args, brain, g_ep, max_orn):
         torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+'_last.pkl'))
     elif args.save_mode == 'max':
         if max_orn:
-            torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+'_max_{}.pkl').format(g_ep.value))
+            torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+'_max_{}.pkl').format(g_ep.value)))
+'''
+def save_nw_param(args, brain, ep_r, max_orn):
+    if args.save_mode == 'all':
+        torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+"_{}.pkl".format(int(ep_r))))
+    elif args.save_mode == 'last':
+        torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+'_last.pkl'))
+    elif args.save_mode == 'max':
+        if max_orn:
+            torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+'_max_{}.pkl').format(int(ep_r)))
 
 class TerminalTablePrinter(object):
     def __init__(self):

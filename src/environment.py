@@ -26,10 +26,6 @@ class Environment(mp.Process):
         self.env = gym.make('CartPole-v0').unwrapped
         self.lbrain = Policy(self.env.observation_space.shape[0], self.env.action_space.n)           # local network
         self.args = args
-        '''
-        self.epoch = args.epoch
-        self.local_t_max = args.local_t_max
-        '''
 
     def run(self):
         step = 1
@@ -107,3 +103,25 @@ class Environment(mp.Process):
 
         self.res_queue.put(None)
         self.tr_queue.put(None)
+    
+    def test(self, brain, env, args):
+        step = 0
+        sum_rewards = 0
+        while step < args.num_rollout:
+            done = False
+            o = env.reset()
+            while not done:
+                if args.render:
+                    env.render()
+                    time.sleep(0.1)
+                a, _, _ = brain.get_action(v_wrap(o[None, :]))
+                o, r, done, _ = env.step(a)
+                sum_rewards += r
+                if not args.monitor:
+                    if sum_rewards > 195:
+                        break
+            print('----------------------------------')
+            print('total reward of the episode:', sum_rewards)
+            print('----------------------------------')
+            sum_rewards = 0
+            step += 1

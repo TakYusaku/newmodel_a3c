@@ -62,7 +62,8 @@ def ad_process(name, args, brain, g_ep, g_ep_r, ep_r, max_orn, res_queue, tr_que
         logger.record_tabular('step', g_ep.value)
         logger.dump_tabular()
     
-    logger.save_nw_param(args, brain, g_ep, max_orn)
+    #logger.save_nw_param(args, brain, g_ep, max_orn)
+    logger.save_nw_param(args, brain, ep_r, max_orn)
     
 
 def date_to_date(datetime_obj):

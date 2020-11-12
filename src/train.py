@@ -83,6 +83,7 @@ if __name__ == '__main__':
 
     #threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, i) for i in range(num_process)]
     threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, tr_queue, i) for i in range(num_process)]
+
     [th.start() for th in threads]
 
     res = []                    # record episode reward to plot
@@ -106,4 +107,4 @@ if __name__ == '__main__':
     util.plot_graph(res, tr_res)
 
     if args.test:
-        test_a3c.test(gbrain, args, env)
+        threads[0].test(gbrain, env, args)
