@@ -23,9 +23,12 @@ def test(brain, args, env):
             if args.render:
                 env.render()
                 time.sleep(0.1)
-            a = brain.get_action(v_wrap(o[None, :]))
+            a, _, _ = brain.get_action(v_wrap(o[None, :]))
             o, r, done, _ = env.step(a)
             sum_rewards += r
+            if not args.monitor:
+                if sum_rewards > 195:
+                    break
         print('----------------------------------')
         print('total reward of the episode:', sum_rewards)
         print('----------------------------------')

@@ -3,7 +3,6 @@ import numpy as np
 import argparse
 import gym
 from gym import wrappers
-import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,9 +14,9 @@ import torch.multiprocessing as mp
 from optimizer import SharedAdam
 from parameter import Policy
 from environment import Environment
-
-#import logger
-import test_a3c
+import logger
+import util
+import test
 
 
 if __name__ == '__main__':
@@ -65,32 +64,25 @@ if __name__ == '__main__':
     parser.add_argument('--num_rollout', type=int, default=6, metavar='N',
                         help='number of rollout')
     args = parser.parse_args()
-
-    if not os.path.exists(args.log_dir):
-        os.mkdir(args.log_dir)
-    # 動画を保存するか
-    if args.monitor:
-        env = wrappers.Monitor(env, args.log_dir, force=True)
     
-    '''
-    #logger.add_tabular_output(os.path.join(args.log_dir, 'progress.csv'))
-    #logger.log_parameters_lite(os.path.join(args.log_dir, 'params.json'), args)
-    '''
     env = gym.make('CartPole-v0').unwrapped
-    gbrain = Policy(env.observation_space.shape[0], env.action_space.n, out_dim=args.out_dim)#.to(device) # global brain の定義
+    env = util.init_setting(env, args)
+
+    gbrain = Policy(env.observation_space.shape[0], env.action_space.n, out_dim=args.out_dim)
     gbrain.share_memory()
 
     optimizer = SharedAdam(gbrain.parameters(), lr=args.lr, betas=(0.92, 0.999))
 
-    global_ep, global_ep_r, res_queue = mp.Value('i', 0), mp.Value('d', 0.), mp.Queue()
-    #global_ep, global_ep_r, res_queue, tr_queue = mp.Value('i', 0), mp.Value('d', 0.), mp.Queue(), mp.Queue()
+    #global_ep, global_ep_r, res_queue = mp.Value('i', 0), mp.Value('d', 0.), mp.Queue()
+    global_ep, global_ep_r, res_queue, tr_queue = mp.Value('i', 0), mp.Value('d', 0.), mp.Queue(), mp.Queue()
 
     if args.num_process:
         num_process = 4
     else:
         num_process = mp.cpu_count()
 
-    threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, i) for i in range(num_process)]
+    #threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, i) for i in range(num_process)]
+    threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, tr_queue, i) for i in range(num_process)]
     [th.start() for th in threads]
 
     res = []                    # record episode reward to plot
@@ -100,7 +92,7 @@ if __name__ == '__main__':
             res.append(r)
         else:
             break
-    '''
+    
     tr_res = []
     while True:
         r = tr_queue.get()
@@ -108,26 +100,10 @@ if __name__ == '__main__':
             tr_res.append(r)
         else:
             break
-    '''
+    
     [th.join() for th in threads]
-    
-    '''
-    fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10,4))
 
-    axL.plot(res)
-    axL.set_ylabel('Moving average ep reward')
-    axL.set_xlabel('Step')
+    util.plot_graph(res, tr_res)
 
-    axR.plot(tr_res)
-    axR.set_ylabel('total reward')
-    axR.set_xlabel('Step')
-
-    fig.savefig("./log_dir/a3c_cartpole-v1.png")
-    '''
-    plt.plot(res)
-    plt.ylabel('Moving average ep reward')
-    plt.xlabel('Step')
-    plt.savefig("./log_dir/a3c_cartpole-v1_ma.png")
-    
     if args.test:
         test_a3c.test(gbrain, args, env)

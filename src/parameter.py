@@ -34,10 +34,10 @@ class Policy(nn.Module):
 
     def get_action(self, s):
         self.eval()
-        logits, _ = self.forward(s)
+        logits, value = self.forward(s)
         prob = F.softmax(logits, dim=1).data
         m = self.distribution(prob)
-        return m.sample().numpy()[0]
+        return m.sample().numpy()[0], prob, value
 
     def loss_func(self, s, a, v_t):
         self.train()
@@ -57,7 +57,7 @@ class Policy(nn.Module):
         logits, values = self.forward(s)
         td = v_t - values
         c_loss = td.pow(2)
-        
+    
         probs = F.softmax(logits, dim=1)
         m = self.distribution(probs)
         exp_v = m.log_prob(a) * td.detach().squeeze()
@@ -67,4 +67,4 @@ class Policy(nn.Module):
         entropy = torch.t(entropy.unsqueeze(0))
         total_loss = torch.add(entropy,c_loss + a_loss).mean()
 
-        return total_loss
+        return total_loss, c_loss.sum().data.item(), entropy.sum().data.item()
