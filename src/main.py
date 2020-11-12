@@ -36,7 +36,7 @@ if __name__ == '__main__':
                         help='save the rendered video')
     parser.add_argument('--log_dir', type=str, default='./log_dir',
                         help='save dir')
-    parser.add_argument('--epoch', type=int, default=3000, metavar='N',
+    parser.add_argument('--epoch', type=int, default=1000, metavar='N',
                         help='training epoch number') #default=10000000
     parser.add_argument('--local_t_max', type=int, default=5, metavar='N',
                         help='bias variance control parameter')
@@ -52,6 +52,8 @@ if __name__ == '__main__':
                         help='Environment')
     #parser.add_argument('--num_process', type=int, default=4, metavar='n',
                         #help='number of processes')
+    parser.add_argument('--num_process', action='store_true',
+                        help='dont use mp.cpu_count()')
     parser.add_argument('--eps', type=float, default=0.01, metavar='E',
                         help='epsilon minimum log or std')
     parser.add_argument('--save_name', type=str, default='exp', metavar='N',
@@ -83,7 +85,12 @@ if __name__ == '__main__':
     global_ep, global_ep_r, res_queue = mp.Value('i', 0), mp.Value('d', 0.), mp.Queue()
     #global_ep, global_ep_r, res_queue, tr_queue = mp.Value('i', 0), mp.Value('d', 0.), mp.Queue(), mp.Queue()
 
-    threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, i) for i in range(mp.cpu_count())]
+    if args.num_process:
+        num_process = 4
+    else:
+        num_process = mp.cpu_count()
+
+    threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, i) for i in range(num_process)]
     [th.start() for th in threads]
 
     res = []                    # record episode reward to plot
