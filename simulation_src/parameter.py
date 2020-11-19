@@ -56,6 +56,23 @@ class Policy(nn.Module):
         self.train()
         logits, values = self.forward(s)
         td = v_t - values
+        c_loss = args.c_loss_coeff * td.pow(2)
+    
+        probs = F.softmax(logits, dim=1)
+        m = self.distribution(probs)
+        exp_v = m.log_prob(a) * td.detach().squeeze()
+        a_loss = -exp_v
+
+        entropy = (probs * (probs + args.eps).log()).sum(dim=1)
+        entropy = args.entropy_beta * torch.t(entropy.unsqueeze(0))
+        total_loss = torch.add(entropy,c_loss + a_loss).mean()
+
+        return total_loss, c_loss.sum().data.item(), entropy.sum().data.item()
+    '''    
+    def loss_func_etp(self, args, s, a, v_t):
+        self.train()
+        logits, values = self.forward(s)
+        td = v_t - values
         c_loss = td.pow(2)
     
         probs = F.softmax(logits, dim=1)
@@ -68,3 +85,4 @@ class Policy(nn.Module):
         total_loss = torch.add(entropy,c_loss + a_loss).mean()
 
         return total_loss, c_loss.sum().data.item(), entropy.sum().data.item()
+    '''

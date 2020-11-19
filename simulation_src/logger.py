@@ -144,12 +144,12 @@ def save_nw_param(args, brain, g_ep, max_orn):
 '''
 def save_nw_param(args, brain, ep_r, max_orn):
     if args.save_mode == 'all':
-        torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+"_{}.pkl".format(int(ep_r))))
+        torch.save(brain.state_dict(), os.path.join(util.nwparam_dirname, args.save_name+"_{}.pkl".format(int(ep_r))))
     elif args.save_mode == 'last':
-        torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+'_last.pkl'))
+        torch.save(brain.state_dict(), os.path.join(util.nwparam_dirname, args.save_name+'_last.pkl'))
     elif args.save_mode == 'max':
         if max_orn:
-            torch.save(brain, os.path.join(util.nwparam_dirname, args.save_name+'_max_{}.pkl').format(int(ep_r)))
+            torch.save(brain.state_dict(), os.path.join(util.nwparam_dirname, args.save_name+'_max_{}.pkl').format(int(ep_r)))
 
 class TerminalTablePrinter(object):
     def __init__(self):

@@ -77,6 +77,9 @@ class Environment(mp.Process):
     def test(self, brain, env, args):
         step = 0
         sum_rewards = 0
+        print('###########################################')
+        print('test start')
+        print('###########################################')
         while step < args.num_rollout:
             done = False
             o = env.reset()
@@ -87,9 +90,11 @@ class Environment(mp.Process):
                 a, _, _ = brain.get_action(util.v_wrap(o[None, :]))
                 o, r, done, _ = env.step(a)
                 sum_rewards += r
+                '''
                 if not args.monitor:
                     if sum_rewards > 195:
                         break
+                '''
             print('----------------------------------')
             print('total reward of the episode:', sum_rewards)
             print('----------------------------------')

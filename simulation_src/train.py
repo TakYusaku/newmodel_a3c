@@ -35,13 +35,13 @@ if __name__ == '__main__':
                         help='save the rendered video')
     parser.add_argument('--log_dir', type=str, default='./log_dir',
                         help='save dir')
-    parser.add_argument('--epoch', type=int, default=1000, metavar='N',
+    parser.add_argument('--epoch', type=int, default=2000, metavar='N',
                         help='training epoch number') #default=10000000
     parser.add_argument('--local_t_max', type=int, default=5, metavar='N',
                         help='bias variance control parameter')
     parser.add_argument('--entropy_beta', type=float, default=0.01, metavar='E',
                         help='coefficient of entropy')
-    parser.add_argument('--v_loss_coeff', type=float, default=0.5, metavar='V',
+    parser.add_argument('--c_loss_coeff', type=float, default=0.5, metavar='V',
                         help='coefficient of value loss')
     parser.add_argument('--out_dim', type=int, default=128, metavar='N',
                         help='number of intermediate layer')
@@ -106,5 +106,12 @@ if __name__ == '__main__':
 
     util.plot_graph(res, tr_res)
 
+    print('###########################################')
+    print('Learning completed')
+    print('###########################################')
+
     if args.test:
-        threads[0].test(gbrain, env, args)
+        if args.save_mode == 'max':
+            tbrain = Policy(env.observation_space.shape[0], env.action_space.n, out_dim=args.out_dim)
+            tbrain.load_state_dict(torch.load(os.path.join(util.nwparam_dirname, args.save_name+"_max_{}.pkl".format(int(max(tr_res))))))
+        threads[0].test(tbrain, env, args)
