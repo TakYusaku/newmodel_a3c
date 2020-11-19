@@ -150,11 +150,11 @@ def plot_graph(res, tr_res):
 
     axL.plot(res)
     axL.set_ylabel('Moving average ep reward')
-    axL.set_xlabel('Step')
+    axL.set_xlabel('Epoch')
 
     axR.plot(tr_res)
     axR.set_ylabel('total reward')
-    axR.set_xlabel('Step')
+    axR.set_xlabel('Epoch')
 
     fig.savefig(os.path.join(dir_name, plotFILE_NAME))
 
