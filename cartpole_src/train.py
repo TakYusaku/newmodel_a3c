@@ -82,9 +82,18 @@ if __name__ == '__main__':
         num_process = mp.cpu_count()
 
     #threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, i) for i in range(num_process)]
+    '''
     threads = [Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, tr_queue, i) for i in range(num_process)]
 
     [th.start() for th in threads]
+    '''
+    wt = Environment(args, gbrain, optimizer, global_ep, global_ep_r, res_queue, tr_queue, 1)
+    threads = []
+    for rank in range(num_process):
+        p = mp.Process(target=wt.run, args=(rank, ))
+        threads.append(p)
+        p.start()
+    print(threads)
 
     res = []                    # record episode reward to plot
     while True:
@@ -114,4 +123,4 @@ if __name__ == '__main__':
         if args.save_mode == 'max':
             tbrain = Policy(env.observation_space.shape[0], env.action_space.n, out_dim=args.out_dim)
             tbrain.load_state_dict(torch.load(os.path.join(util.nwparam_dirname, args.save_name+"_max_{}.pkl".format(int(max(tr_res))))))
-        threads[0].test(tbrain, env, args)
+        wt.test(tbrain, env, args)

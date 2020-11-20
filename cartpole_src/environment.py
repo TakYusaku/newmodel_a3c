@@ -16,14 +16,15 @@ import util
 class Environment(mp.Process):
     def __init__(self, args, gbrain, optimizer, global_ep, global_ep_r, res_queue, tr_queue, name):
         super(Environment, self).__init__()
-        self.name = 'w%02i' % name
+        # self.name = 'w%02i' % name
         self.g_ep, self.g_ep_r, self.res_queue, self.tr_queue = global_ep, global_ep_r, res_queue, tr_queue
         self.gbrain, self.optimizer = gbrain, optimizer
         self.env = gym.make('CartPole-v0').unwrapped
         self.lbrain = Policy(self.env.observation_space.shape[0], self.env.action_space.n)           # local network
         self.args = args
 
-    def run(self):
+    def run(self, name):
+        self.name = 'w%02i' % name
         step = 1
         o = self.env.reset()
         ep_r = 0.
